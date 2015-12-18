@@ -21,7 +21,6 @@ Vcs-Git: https://github.com/openstack/swauth
 
 Package: swauth
 Architecture: all
-Section: net
 Depends: python-eventlet (>= 0.17.4),
          swift-proxy (>= 2.2.0),
          ${misc:Depends},
