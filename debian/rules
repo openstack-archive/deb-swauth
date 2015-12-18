@@ -23,4 +23,5 @@ override_dh_sphinxdoc:
 ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
 	PYTHONPATH=. sphinx-build -b html doc/source debian/swauth-doc/usr/share/doc/swauth-doc/html
 	dh_sphinxdoc -O--buildsystem=python_distutils
+	rm debian/swauth-doc/usr/share/doc/swauth-doc/html/_sources/license.txt
 endif
