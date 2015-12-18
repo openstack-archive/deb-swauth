@@ -26,10 +26,9 @@ Depends: python-eventlet (>= 0.17.4),
          ${misc:Depends},
          ${python:Depends},
 Provides: ${python:Provides},
-Description: An alternative authentication system for Swift
- .
- An auth service for Swift as WSGI Middleware that uses Swift itself as a
- backing store. It's alternative to Keystone.
+Description: alternative authentication system for Swift
+ Swauth is an auth service for Swift as WSGI Middleware that uses Swift itself
+ as a backing store. It's alternative to Keystone.
  .
  This package provides the Python libraries that actually implement everything.
 
@@ -38,9 +37,8 @@ Architecture: all
 Section: doc
 Depends: ${misc:Depends},
          ${sphinxdoc:Depends},
-Description: An alternative authentication system for Swift - documentation
- .
- An auth service for Swift as WSGI Middleware that uses Swift itself as a
- backing store. It's alternative to Keystone.
+Description: alternative authentication system for Swift - documentation
+ Swauth is an auth service for Swift as WSGI Middleware that uses Swift itself
+ as a backing store. It's alternative to Keystone.
  .
  This package provides the Sphinx generated documentation for Swauth.
