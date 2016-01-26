@@ -2,19 +2,19 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: swauth
 Source: https://github.com/openstack/swauth
 
+Files: *
+Copyright: (c) 2011-2015, See AUTHORS file
+License: Apache-2
+
 Files: debian/*
 Copyright: (c) 2013-2014, Gregory Holt <gholt@rackspace.com>
            (c) 2015, Ondřej Nový <novy@ondrej.org>
            (c) 2015, Thomas Goirand <zigo@debian.org>
 License: Apache-2
 
-Files: doc/source/Draft Security Guide/*
+Files: doc/source/Draft?Security?Guide/*
 Copyright: (c) 2013, Rodney Beede
 License: CC-BY-3.0
-
-Files: *
-Copyright: (c) 2011-2015, See AUTHORS file
-License: Apache-2
 
 License: Apache-2
  Licensed under the Apache License, Version 2.0 (the "License");
