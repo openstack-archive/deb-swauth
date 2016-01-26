@@ -1,4 +1,4 @@
-swauth (1.1.0-1) UNRELEASED; urgency=medium
+swauth (1.1.0-1) unstable; urgency=medium
 
   * Initial release. (Closes: #808352)
 
