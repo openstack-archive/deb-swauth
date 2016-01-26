@@ -9,10 +9,7 @@ export OSLO_PACKAGE_VERSION=$(shell dpkg-parsechangelog | grep Version: | cut -d
 
 override_dh_clean:
 	dh_clean
-	rm -rf doc/build/*
-	rm -rf swauth.egg-info
 	rm -rf cover
-	rm -rf .eggs
 
 override_dh_auto_test:
 ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
