@@ -14,6 +14,7 @@ Build-Depends-Indep: python-eventlet (>= 0.17.4),
                      python-mock,
                      python-nose,
                      swift-proxy (>= 2.2.0),
+                     python-swiftclient,
 Standards-Version: 3.9.6
 Homepage: https://github.com/openstack/swauth
 Vcs-Browser: https://anonscm.debian.org/cgit/openstack/swauth.git
@@ -23,6 +24,7 @@ Package: swauth
 Architecture: all
 Depends: python-eventlet (>= 0.17.4),
          swift-proxy (>= 2.2.0),
+         python-swiftclient,
          ${misc:Depends},
          ${python:Depends},
 Provides: ${python:Provides},

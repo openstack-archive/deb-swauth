@@ -1,6 +1,7 @@
 swauth (1.1.0-2) UNRELEASED; urgency=medium
 
   * Vcs urls fixed.
+  * Added python-swiftclient dependency.
 
  -- Ondřej Nový <novy@ondrej.org>  Wed, 27 Jan 2016 10:03:19 +0100
 
