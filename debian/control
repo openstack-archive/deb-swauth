@@ -15,7 +15,7 @@ Build-Depends-Indep: python-eventlet (>= 0.17.4),
                      python-nose,
                      swift-proxy (>= 2.2.0),
                      python-swiftclient,
-Standards-Version: 3.9.6
+Standards-Version: 3.9.7
 Homepage: https://github.com/openstack/swauth
 Vcs-Browser: https://anonscm.debian.org/cgit/openstack/swauth.git
 Vcs-Git: https://anonscm.debian.org/git/openstack/swauth.git
