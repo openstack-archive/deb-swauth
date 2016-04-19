@@ -1,2 +1,5 @@
 Tests: help
 Depends: swauth
+
+Test-Command: cd "$ADTTMP" ; python -c "import swauth; print swauth.__version__"
+Depends: swauth
