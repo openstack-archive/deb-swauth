@@ -4,6 +4,8 @@
 #-----------------------
 set -e
 
+cd "$ADTTMP"
+
 CMDS=('swauth-add-account' 'swauth-add-user' 'swauth-cleanup-tokens'
       'swauth-delete-account' 'swauth-delete-user' 'swauth-list' 'swauth-prep'
       'swauth-set-account-service')
