@@ -3,6 +3,7 @@ swauth (1.1.0-3) UNRELEASED; urgency=medium
   * Standards-Version is 3.9.8 now (no change)
   * Change directory to $ADTTMP before running Debian tests
   * Added Python module import Debian test
+  * Use OSLO_PACKAGE_VERSION from openstack-pkg-tools
 
  -- Ondřej Nový <novy@ondrej.org>  Sat, 09 Apr 2016 19:32:31 +0200
 
