@@ -20,3 +20,8 @@ ifeq (,$(findstring nodocs, $(DEB_BUILD_OPTIONS)))
 	dh_sphinxdoc -O--buildsystem=python_distutils
 	rm debian/swauth-doc/usr/share/doc/swauth-doc/html/_sources/license.txt
 endif
+
+override_dh_installdocs:
+	dh_installdocs
+
+	dh_installdocs -A AUTHORS
