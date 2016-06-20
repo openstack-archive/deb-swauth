@@ -5,6 +5,7 @@ swauth (1.1.0-3) UNRELEASED; urgency=medium
   * Added Python module import Debian test
   * Use OSLO_PACKAGE_VERSION from openstack-pkg-tools
   * Use dh_installdocs -A for installing AUTHORS file
+  * d/{control,copyright}: Use my @debian.org email address
 
  -- Ondřej Nový <novy@ondrej.org>  Sat, 09 Apr 2016 19:32:31 +0200
 

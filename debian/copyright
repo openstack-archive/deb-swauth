@@ -8,7 +8,7 @@ License: Apache-2
 
 Files: debian/*
 Copyright: (c) 2013-2014, Gregory Holt <gholt@rackspace.com>
-           (c) 2015, Ondřej Nový <novy@ondrej.org>
+           (c) 2015, Ondřej Nový <onovy@debian.org>
            (c) 2015, Thomas Goirand <zigo@debian.org>
 License: Apache-2
 
