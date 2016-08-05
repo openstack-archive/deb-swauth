@@ -1,3 +1,9 @@
+swauth (1.1.0-3~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Ondřej Nový <onovy@debian.org>  Fri, 05 Aug 2016 12:46:01 +0200
+
 swauth (1.1.0-3) unstable; urgency=medium
 
   * Standards-Version is 3.9.8 now (no change)
