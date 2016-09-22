@@ -11,11 +11,12 @@ Build-Depends: debhelper (>= 9),
                python-pbr,
                python-setuptools,
                python-sphinx,
-Build-Depends-Indep: python-eventlet (>= 0.17.4),
+Build-Depends-Indep: python-eventlet (>= 0.18.4),
                      python-mock,
                      python-nose,
                      swift-proxy (>= 2.2.0),
                      python-swiftclient,
+                     python-six (>= 1.9.0),
 Standards-Version: 3.9.8
 Homepage: https://github.com/openstack/swauth
 Vcs-Browser: https://anonscm.debian.org/cgit/openstack/swauth.git
@@ -23,7 +24,7 @@ Vcs-Git: https://anonscm.debian.org/git/openstack/swauth.git
 
 Package: swauth
 Architecture: all
-Depends: python-eventlet (>= 0.17.4),
+Depends: python-eventlet (>= 0.18.4),
          swift-proxy (>= 2.2.0),
          python-swiftclient,
          ${misc:Depends},
