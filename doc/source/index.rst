@@ -9,7 +9,7 @@ Swauth
     Copyright (c) 2010-2012 OpenStack, LLC
 
     An Auth Service for Swift as WSGI Middleware that uses Swift itself as a
-    backing store. Docs at: http://swauth.readthedocs.org/ or ask in
+    backing store. Docs at: https://swauth.readthedocs.io/ or ask in
     #openstack-swauth on freenode IRC (archive: http://eavesdrop.openstack.org/irclogs/%23openstack-swauth/).
 
     Source available at: https://github.com/openstack/swauth
@@ -120,6 +120,50 @@ Web Admin Install
     -U .super_admin:.super_admin -K swauthkey upload .webadmin .``
 
 3)  Open ``http[s]://<host>:<port>/auth/`` in your browser.
+
+
+Swift3 Middleware Compatibility
+-------------------------------
+
+
+`Swift3 middleware <https://github.com/openstack/swift3>`_ support has to be
+explicitly turned on in conf file using `s3_support` config option. It can
+easily be used with swauth when `auth_type` in swauth is configured to be
+*Plaintext* (default)::
+
+    [pipeline:main]
+    pipeline = catch_errors cache swift3 swauth proxy-server
+
+    [filter:swauth]
+    use = egg:swauth#swauth
+    super_admin_key = swauthkey
+    s3_support = on
+
+The AWS S3 client uses password in plaintext to
+`compute HMAC signature <https://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html>`_
+When `auth_type` in swauth is configured to be *Sha1* or *Sha512*, swauth
+can only use the stored hashed password to compute HMAC signature. This results
+in signature mismatch although the user credentials are correct.
+
+When `auth_type` is **not** *Plaintext*, the only way for S3 clients to
+authenticate is by giving SHA1/SHA512 of password as input to it's HMAC
+function. In this case, the S3 clients will have to know `auth_type` and
+`auth_type_salt` beforehand. Here is a sample configuration::
+
+    [pipeline:main]
+    pipeline = catch_errors cache swift3 swauth proxy-server
+
+    [filter:swauth]
+    use = egg:swauth#swauth
+    super_admin_key = swauthkey
+    s3_support = on
+    auth_type = Sha512
+    auth_type_salt = mysalt
+
+**Security Concern**: Swauth stores user information (username, password hash,
+salt etc) as objects in the Swift cluster. If these backend objects which
+contain password hashes gets stolen, the intruder will be able to authenticate
+using the hash directly when S3 API is used.
 
 
 Contents

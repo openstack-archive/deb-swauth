@@ -60,6 +60,7 @@ from swauth import swift_version
 
 
 SWIFT_MIN_VERSION = "2.2.0"
+CONTENT_TYPE_JSON = 'application/json'
 
 
 class Swauth(object):
@@ -146,7 +147,7 @@ class Swauth(object):
             msg = _('No super_admin_key set in conf file; Swauth '
                     'administration features will be disabled.')
             try:
-                self.logger.warn(msg)
+                self.logger.warning(msg)
             except Exception:
                 pass
         self.token_life = int(conf.get('token_life', 86400))
@@ -164,6 +165,19 @@ class Swauth(object):
         if self.auth_encoder is None:
             raise ValueError('Invalid auth_type in config file: %s'
                              % self.auth_type)
+        # If auth_type_salt is not set in conf file, a random salt will be
+        # generated for each new password to be encoded.
+        self.auth_encoder.salt = conf.get('auth_type_salt', None)
+
+        # Due to security concerns, S3 support is disabled by default.
+        self.s3_support = conf.get('s3_support', 'off').lower() in TRUE_VALUES
+        if self.s3_support and self.auth_type != 'Plaintext' \
+                and not self.auth_encoder.salt:
+            msg = _('S3 support requires salt to be manually set in conf '
+                    'file using auth_type_salt config option.')
+            self.logger.warning(msg)
+            self.s3_support = False
+
         self.allow_overrides = \
             conf.get('allow_overrides', 't').lower() in TRUE_VALUES
         self.agent = '%(orig)s Swauth'
@@ -228,6 +242,9 @@ class Swauth(object):
             elif env.get('PATH_INFO', '').startswith(self.auth_prefix):
                 return self.handle(env, start_response)
         s3 = env.get('HTTP_AUTHORIZATION')
+        if s3 and not self.s3_support:
+            msg = 'S3 support is disabled in swauth.'
+            return HTTPBadRequest(body=msg)(env, start_response)
         token = env.get('HTTP_X_AUTH_TOKEN', env.get('HTTP_X_STORAGE_TOKEN'))
         if token and len(token) > swauth.authtypes.MAX_TOKEN_LENGTH:
             return HTTPBadRequest(body='Token exceeds maximum length.')(env,
@@ -306,10 +323,13 @@ class Swauth(object):
                     groups = None
 
         if env.get('HTTP_AUTHORIZATION'):
+            if not self.s3_support:
+                self.logger.warning('S3 support is disabled in swauth.')
+                return None
             if self.swauth_remote:
                 # TODO(gholt): Support S3-style authorization with
                 # swauth_remote mode
-                self.logger.warn('S3-style authorization not supported yet '
+                self.logger.warning('S3-style authorization not supported yet '
                                  'with swauth_remote mode.')
                 return None
             try:
@@ -340,9 +360,24 @@ class Swauth(object):
             env['PATH_INFO'] = path.replace("%s:%s" % (account, user),
                                             account_id, 1)
             detail = json.loads(resp.body)
+            if detail:
+                creds = detail.get('auth')
+                try:
+                    auth_encoder, creds_dict = \
+                        swauth.authtypes.validate_creds(creds)
+                except ValueError as e:
+                    self.logger.error('%s' % e.args[0])
+                    return None
 
-            password = detail['auth'].split(':')[-1]
+            password = creds_dict['hash']
             msg = base64.urlsafe_b64decode(unquote(token))
+
+            # https://bugs.python.org/issue5285
+            if isinstance(password, unicode):
+                password = password.encode('utf-8')
+            if isinstance(msg, unicode):
+                msg = msg.encode('utf-8')
+
             s = base64.encodestring(hmac.new(password,
                                              msg, sha1).digest()).strip()
             if s != sign:
@@ -613,7 +648,8 @@ class Swauth(object):
                 if container['name'][0] != '.':
                     listing.append({'name': container['name']})
             marker = sublisting[-1]['name'].encode('utf-8')
-        return Response(body=json.dumps({'accounts': listing}))
+        return Response(body=json.dumps({'accounts': listing}),
+                        content_type=CONTENT_TYPE_JSON)
 
     def handle_get_account(self, req):
         """Handles the GET v2/<account> call for getting account information.
@@ -669,8 +705,10 @@ class Swauth(object):
                 if obj['name'][0] != '.':
                     listing.append({'name': obj['name']})
             marker = sublisting[-1]['name'].encode('utf-8')
-        return Response(body=json.dumps({'account_id': account_id,
-                                    'services': services, 'users': listing}))
+        return Response(content_type=CONTENT_TYPE_JSON,
+                        body=json.dumps({'account_id': account_id,
+                                         'services': services,
+                                         'users': listing}))
 
     def handle_set_services(self, req):
         """Handles the POST v2/<account>/.services call for setting services
@@ -739,7 +777,8 @@ class Swauth(object):
         if resp.status_int // 100 != 2:
             raise Exception('Could not save .services object: %s %s' %
                             (path, resp.status))
-        return Response(request=req, body=services)
+        return Response(request=req, body=services,
+                        content_type=CONTENT_TYPE_JSON)
 
     def handle_put_account(self, req):
         """Handles the PUT v2/<account> call for adding an account to the auth
@@ -1016,13 +1055,15 @@ class Swauth(object):
                ('.reseller_admin' in display_groups and
                     not self.is_super_admin(req)):
                     return self.denied_response(req)
-        return Response(body=body)
+        return Response(body=body, content_type=CONTENT_TYPE_JSON)
 
     def handle_put_user(self, req):
         """Handles the PUT v2/<account>/<user> call for adding a user to an
         account.
 
         X-Auth-User-Key represents the user's key (url encoded),
+        - OR -
+        X-Auth-User-Key-Hash represents the user's hashed key (url encoded),
         X-Auth-User-Admin may be set to `true` to create an account .admin, and
         X-Auth-User-Reseller-Admin may be set to `true` to create a
         .reseller_admin.
@@ -1047,14 +1088,21 @@ class Swauth(object):
         account = req.path_info_pop()
         user = req.path_info_pop()
         key = unquote(req.headers.get('x-auth-user-key', ''))
+        key_hash = unquote(req.headers.get('x-auth-user-key-hash', ''))
         admin = req.headers.get('x-auth-user-admin') == 'true'
         reseller_admin = \
             req.headers.get('x-auth-user-reseller-admin') == 'true'
         if reseller_admin:
             admin = True
         if req.path_info or not account or account[0] == '.' or not user or \
-                user[0] == '.' or not key:
+                user[0] == '.' or (not key and not key_hash):
             return HTTPBadRequest(request=req)
+        if key_hash:
+            try:
+                swauth.authtypes.validate_creds(key_hash)
+            except ValueError:
+                return HTTPBadRequest(request=req)
+
         user_arg = account + ':' + user
         if reseller_admin:
             if not self.is_super_admin(req) and\
@@ -1071,7 +1119,7 @@ class Swauth(object):
             raise Exception('Could not retrieve account id value: %s %s' %
                             (path, resp.status))
         headers = {'X-Object-Meta-Account-Id':
-                        resp.headers['x-container-meta-account-id']}
+                   resp.headers['x-container-meta-account-id']}
         # Create the object in the main auth account (this object represents
         # the user)
         path = quote('/v1/%s/%s/%s' % (self.auth_account, account, user))
@@ -1080,7 +1128,7 @@ class Swauth(object):
             groups.append('.admin')
         if reseller_admin:
             groups.append('.reseller_admin')
-        auth_value = self.auth_encoder().encode(key)
+        auth_value = key_hash or self.auth_encoder().encode(key)
         resp = self.make_pre_authed_request(
             req.environ, 'PUT', path,
             json.dumps({'auth': auth_value,
@@ -1256,10 +1304,15 @@ class Swauth(object):
                 key == self.super_admin_key:
             token = self.get_itoken(req.environ)
             url = '%s/%s.auth' % (self.dsc_url, self.reseller_prefix)
-            return Response(request=req,
-              body=json.dumps({'storage': {'default': 'local', 'local': url}}),
-              headers={'x-auth-token': token, 'x-storage-token': token,
-                       'x-storage-url': url})
+            return Response(
+                request=req,
+                content_type=CONTENT_TYPE_JSON,
+                body=json.dumps({'storage': {'default': 'local',
+                                             'local': url}}),
+                headers={'x-auth-token': token,
+                         'x-storage-token': token,
+                         'x-storage-url': url})
+
         # Authenticate user
         path = quote('/v1/%s/%s/%s' % (self.auth_account, account, user))
         resp = self.make_pre_authed_request(
@@ -1358,8 +1411,12 @@ class Swauth(object):
                             (path, resp.status))
         detail = json.loads(resp.body)
         url = detail['storage'][detail['storage']['default']]
-        return Response(request=req, body=resp.body,
-            headers={'x-auth-token': token, 'x-storage-token': token,
+        return Response(
+            request=req,
+            body=resp.body,
+            content_type=CONTENT_TYPE_JSON,
+            headers={'x-auth-token': token,
+                     'x-storage-token': token,
                      'x-auth-token-expires': str(int(expires - time())),
                      'x-storage-url': url})
 
@@ -1497,14 +1554,22 @@ class Swauth(object):
 
     def credentials_match(self, user_detail, key):
         """Returns True if the key is valid for the user_detail.
-        It will use self.auth_encoder to check for a key match.
+        It will use auth_encoder type the password was encoded with,
+        to check for a key match.
 
         :param user_detail: The dict for the user.
         :param key: The key to validate for the user.
         :returns: True if the key is valid for the user, False if not.
         """
-        return user_detail and self.auth_encoder().match(
-          key, user_detail.get('auth'))
+        if user_detail:
+            creds = user_detail.get('auth')
+            try:
+                auth_encoder, creds_dict = \
+                    swauth.authtypes.validate_creds(creds)
+            except ValueError as e:
+                self.logger.error('%s' % e.args[0])
+                return False
+        return user_detail and auth_encoder.match(key, creds, **creds_dict)
 
     def is_user_changing_own_key(self, req, user):
         """Check if the user is changing his own key.
@@ -1544,8 +1609,8 @@ class Swauth(object):
         :param returns: True if .super_admin.
         """
         return req.headers.get('x-auth-admin-user') == '.super_admin' and \
-               self.super_admin_key and \
-               req.headers.get('x-auth-admin-key') == self.super_admin_key
+            self.super_admin_key and \
+            req.headers.get('x-auth-admin-key') == self.super_admin_key
 
     def is_reseller_admin(self, req, admin_detail=None):
         """Returns True if the admin specified in the request represents a
@@ -1588,7 +1653,7 @@ class Swauth(object):
                 return False
             req.credentials_valid = True
             return admin_detail and admin_detail['account'] == account and \
-                   '.admin' in (g['name'] for g in admin_detail['groups'])
+                '.admin' in (g['name'] for g in admin_detail['groups'])
         return False
 
     def posthooklogger(self, env, req):
