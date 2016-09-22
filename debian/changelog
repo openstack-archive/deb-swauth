@@ -1,9 +1,9 @@
-swauth (1.2.0-1) UNRELEASED; urgency=medium
+swauth (1.2.0-1) unstable; urgency=medium
 
   * New upstream release
   * Rearranged (build) depends for new upstream release
 
- -- Ondřej Nový <onovy@debian.org>  Thu, 22 Sep 2016 15:30:42 +0200
+ -- Ondřej Nový <onovy@debian.org>  Thu, 22 Sep 2016 15:59:07 +0200
 
 swauth (1.1.0-3) unstable; urgency=medium
 
