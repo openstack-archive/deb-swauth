@@ -19,8 +19,8 @@ Build-Depends-Indep: python-eventlet (>= 0.18.4),
                      python-six (>= 1.9.0),
 Standards-Version: 3.9.8
 Homepage: https://github.com/openstack/swauth
-Vcs-Browser: https://anonscm.debian.org/cgit/openstack/swauth.git
-Vcs-Git: https://anonscm.debian.org/git/openstack/swauth.git
+Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-swauth?h=debian%2Fnewton
+Vcs-Git: https://git.openstack.org/openstack/deb-swauth -b debian/newton
 
 Package: swauth
 Architecture: all
