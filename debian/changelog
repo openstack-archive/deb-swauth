@@ -3,6 +3,7 @@ swauth (1.2.0-2) UNRELEASED; urgency=medium
   * d/s/options: extend-diff-ignore of .gitreview
   * d/control: Using OpenStack's Gerrit as VCS URLs.
   * Bumped debhelper version to 10
+  * Bumped required version of python-pbr to 1.8
 
  -- Ondřej Nový <onovy@debian.org>  Thu, 29 Sep 2016 13:51:49 +0200
 
