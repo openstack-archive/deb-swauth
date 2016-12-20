@@ -1,3 +1,9 @@
+swauth (1.2.0-2~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Ondřej Nový <onovy@debian.org>  Sun, 27 Nov 2016 19:06:05 +0100
+
 swauth (1.2.0-2) unstable; urgency=medium
 
   * d/s/options: extend-diff-ignore of .gitreview
