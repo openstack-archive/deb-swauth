@@ -17,7 +17,7 @@ Build-Depends-Indep: python-eventlet (>= 0.18.4),
                      swift-proxy (>= 2.2.0),
                      python-swiftclient,
                      python-six (>= 1.9.0),
-Standards-Version: 3.9.8
+Standards-Version: 4.0.0.4
 Homepage: https://github.com/openstack/swauth
 Vcs-Browser: https://git.openstack.org/cgit/openstack/deb-swauth?h=debian%2Fnewton
 Vcs-Git: https://git.openstack.org/openstack/deb-swauth -b debian/newton
@@ -30,6 +30,7 @@ Depends: python-eventlet (>= 0.18.4),
          ${misc:Depends},
          ${python:Depends},
 Provides: ${python:Provides},
+Suggests: swauth-doc
 Description: alternative authentication system for Swift
  Swauth is an auth service for Swift as WSGI Middleware that uses Swift itself
  as a backing store. It's alternative to Keystone.

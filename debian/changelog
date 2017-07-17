@@ -1,3 +1,12 @@
+swauth (1.2.0-3) unstable; urgency=medium
+
+  * Fix FTBFS with new Sphinx (Closes: #868598)
+  * d/copyright: Bump copyright years
+  * Suggest doc package
+  * Standards-Version is 4.0.0.4 now
+
+ -- Ondřej Nový <onovy@debian.org>  Mon, 17 Jul 2017 10:29:35 +0200
+
 swauth (1.2.0-2) unstable; urgency=medium
 
   * d/s/options: extend-diff-ignore of .gitreview
